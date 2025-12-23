@@ -56,7 +56,7 @@ export default function Login() {
       email: values.email,
       password: values.password,
       callbackUrl: "/products",
-      redirect: false,
+      redirect: true,
     });
     setIsLoading(false);
     // console.log(values);
