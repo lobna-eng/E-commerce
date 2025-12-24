@@ -1,54 +1,87 @@
-
-import { FailedLoginResponseI, SuccessLoginResponseI } from "@/interfaces"
-import NextAuth, { AuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
+import { FailedLoginResponseI, SuccessLoginResponseI } from "@/interfaces";
+import NextAuth, { AuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 export const authOptions: AuthOptions = {
-    providers: [
-        CredentialsProvider({
-            name: 'Credentials',
-            credentials: {
-                email: {},
-                password: {}
-            },
-            authorize: async (credentials) => {
-                const response = await fetch("https://ecommerce.routemisr.com/api/v1/auth/signin", {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        email: credentials?.email,
-                        password: credentials?.password
-                    }),
-                    headers: { "Content-Type": "application/json" }
-                })
-                const payload: SuccessLoginResponseI | FailedLoginResponseI = await response.json()
-                // console.log(payload);
-                if ('token' in payload) {
-                    return {
-                        id: payload.user.email,
-                        user: payload.user,
-                        token: payload.token
-                    }
-                } else {
-                    throw new Error(payload.message)
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: {},
+        password: {},
+      },
+      //   authorize: async (credentials) => {
+      //     const response = await fetch(
+      //       "https://ecommerce.routemisr.com/api/v1/auth/signin",
+      //       {
+      //         method: "POST",
+      //         body: JSON.stringify({
+      //           email: credentials?.email,
+      //           password: credentials?.password,
+      //         }),
+      //         headers: { "Content-Type": "application/json" },
+      //       }
+      //     );
+      //     const payload: SuccessLoginResponseI | FailedLoginResponseI =
+      //       await response.json();
+      //     // console.log(payload);
+      //     if ("token" in payload) {
+      //       return {
+      //         id: payload.user.email,
+      //         user: payload.user,
+      //         token: payload.token,
+      //       };
+      //     } else {
+      //       throw new Error(payload.message);
+      //     }
+      //   },
+      authorize: async (credentials) => {
+        const response = await fetch(
+          "https://ecommerce.routemisr.com/api/v1/auth/signin",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              email: credentials?.email,
+              password: credentials?.password,
+            }),
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
-                }
-            }
-        })
-    ], callbacks: {
-        jwt: ({ token, user }) => {
-            if (user) {
-                token.token = user.token,
-                    token.user = user.user
-            }
-            return token
+        const payload: SuccessLoginResponseI | FailedLoginResponseI =
+          await response.json();
 
-        },
-        session: ({ session, token }) => {
-            session.user = token.user
-            return session
+        if ("token" in payload) {
+          return {
+            id: payload.user.email,
+            user: payload.user,
+            token: payload.token,
+          };
         }
 
-    }, pages: {
-        signIn: '/login',
-        error:'/login'
-    }
-}
+        // 👇 local يفضل throw
+        if (process.env.NODE_ENV === "development") {
+          throw new Error(payload.message);
+        }
+
+        // 👇 production (Vercel) يرجّع null بهدوء
+        return null;
+      },
+    }),
+  ],
+  callbacks: {
+    jwt: ({ token, user }) => {
+      if (user) {
+        (token.token = user.token), (token.user = user.user);
+      }
+      return token;
+    },
+    session: ({ session, token }) => {
+      session.user = token.user;
+      return session;
+    },
+  },
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+};

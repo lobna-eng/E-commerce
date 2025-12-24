@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Link from "next/link";
 
 export default function AllOrders() {
   const [userOrders, setUserOrders] = useState<orderI[] | null>(null);
@@ -47,7 +48,7 @@ export default function AllOrders() {
           We have thousands of items available across our wide range of sellers.
           Start ordering today!
         </p>
-        <Button>Continue Shopping</Button>
+       <Link href={'/products'}> <Button className="cursor-pointer">Continue Shopping</Button></Link>
       </div>
     );
   }
