@@ -14,7 +14,7 @@ import {
   Loader,
 } from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
   Dialog,
   DialogClose,
@@ -48,8 +48,9 @@ export default function Profile() {
     setIsChangingPassword(true);
     const data = await changePasswordAction(passwordInfo);
     if (data.message == "success") {
-      toast.success("password changed successfully");
-      router.push("/");
+      toast.success("password changed successfully.please login again");
+      signOut({ callbackUrl: "/" });
+
       setapiError("");
     } else if (data.message == "fail") {
       setapiError(data.errors?.msg);
